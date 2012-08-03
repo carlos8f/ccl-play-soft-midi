@@ -13,9 +13,7 @@
 
 (defun create-synth ()
   "create the synth unit"
-  (let ((AU-Graph (#_NewPtr 4))
-    (Synth-Unit (#_NewPtr 4))
-    (Synth-Description (make-record
+  (let ((Synth-Description (make-record
       :<a>udio<c>omponent<d>escription
       :component<m>anufacturer #$kAudioUnitManufacturer_Apple
       :component<f>lags 0
@@ -36,25 +34,44 @@
       :component<f>lags<m>ask 0
       :component<t>ype #$kAudioUnitType_Output
       :component<s>ub<t>ype #$kAudioUnitSubType_DefaultOutput)))
-    (#_NewAUGraph AU-Graph)
-    (when (%null-ptr-p AU-Graph) (error "could not create AUGraph"))
-    (rlet ((Synth-Node :<aun>ode)
+    (rlet ((AU-Graph :<aug>raph)
+          (Synth-Node :<aun>ode)
           (Limiter-Node :<aun>ode)
-          (Output-Node :<aun>ode))
+          (Output-Node :<aun>ode)
+          (Synth-Unit :<a>udio<u>nit))
 
-      (setq *graph* AU-Graph)
+      (print (#_NewAUGraph (pref AU-Graph :<aug>raph)))
+      (print (#_AUGraphAddNode AU-Graph
+             (pref Synth-Description :<a>udio<c>omponent<d>escription)
+             (pref Synth-Node :<aun>ode)))
+      #|
+      (print (#_AUGraphAddNode AU-Graph
+             (pref Limiter-Description :<a>udio<c>omponent<d>escription)
+             (pref Limiter-Node :<aun>ode)))
+      (print (#_AUGraphAddNode AU-Graph
+             (pref Output-Description :<a>udio<c>omponent<d>escription)
+             (pref Output-Node :<aun>ode)))
 
-      (#_AUGraphAddNode *graph* Synth-Description Synth-Node)
-      (#_AUGraphAddNode *graph* Limiter-Description Limiter-Node)
-      (#_AUGraphAddNode *graph* Output-Description Output-Node)
-      (#_AUGraphOpen *graph*)
-      (#_AUGraphConnectNodeInput *graph* (%ptr-to-int Synth-Node) 0 (%ptr-to-int Limiter-Node) 0)
-      (#_AUGraphConnectNodeInput *graph* (%ptr-to-int Limiter-Node) 0 (%ptr-to-int Output-Node) 0)
-      (#_AUGraphNodeInfo *graph* (%ptr-to-int Synth-Node) Synth-Description Synth-Unit)
-      (when (%null-ptr-p Synth-Unit) (error "could not get NodeInfo for synth"))
-      (setq *synth-unit* Synth-Unit)
-      (#_AUGraphInitialize *graph*)
-      )))
+      (print (#_AUGraphOpen AU-Graph))
+      (print (#_AUGraphConnectNodeInput AU-Graph
+             (pref Synth-Node :<aun>ode)
+             0
+             (pref Limiter-Node :<aun>ode)
+             0))
+      (print (#_AUGraphConnectNodeInput AU-Graph
+             (pref Limiter-Node :<aun>ode)
+             0
+             (pref Output-Node :<aun>ode)
+             0))
+      (print (#_AUGraphInitialize AU-Graph))
+      
+      (print (#_AUGraphNodeInfo AU-Graph
+             (pref Synth-Node :<aun>ode)
+             (#_NewPtr 4)
+             Synth-Unit))
+      |#
+
+      Synth-Unit)))
 
 (defun dispose-graph()
   "clean up the graph object"
